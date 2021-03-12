@@ -29,31 +29,25 @@ class LocationFragment : Fragment() {
     //tag для логов
     private val TAG = LocationFragment::class.java.simpleName
 
-    private val REQUEST_LOCATION_PERMISSION = 1
-
+    //определение координат пользователя
     private var fusedLocationClient: FusedLocationProviderClient? = null
 
 
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
 
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
-
-        //Начальный параметры
+        //Начальные параметры
         val homeLatLng = LatLng(59.94019072565021, 30.31458675591602)
         val zoomLevel = 15f
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
         //googleMap.addMarker(MarkerOptions().position(homeLatLng))
 
-
         //применить стиль из папки Raw
         setMapStyle(googleMap)
 
-        //включить слежение
-        enableMyLocation(googleMap)
 
         val myLocationButton: FloatingActionButton =
             requireActivity().findViewById(R.id.fab_location)
@@ -88,29 +82,6 @@ class LocationFragment : Fragment() {
         }
     }
 
-
-    //включить слежение за местоположением
-    @SuppressLint("MissingPermission")
-    private fun enableMyLocation(map: GoogleMap) {
-        if (isPermissionGranted()) {
-            map.isMyLocationEnabled = true
-            map.uiSettings.isMyLocationButtonEnabled = false
-        } else {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                REQUEST_LOCATION_PERMISSION
-            )
-        }
-    }
-
-    //проверка доступа к геолокации
-    private fun isPermissionGranted(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            requireContext(),
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
