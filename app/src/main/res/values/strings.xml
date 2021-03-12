@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">TravelBlog</string>
+    <string name="hint_login">login</string>
+    <string name="checkbox_info_blogger">Блогер</string>
+    <string name="btn_enter">Войти</string>
 </resources>
