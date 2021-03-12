@@ -9,4 +9,6 @@
     <dimen name="spacing_large_24">24dp</dimen>
     <dimen name="spacing_normal_16">16dp</dimen>
     <dimen name="spacing_tiny_4">4dp</dimen>
+
+    <dimen name="logo_size">100dp</dimen>
 </resources>
