@@ -17,15 +17,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
-import com.google.api.client.auth.oauth2.Credential
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
-import com.google.api.services.youtube.YouTube
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.ktx.storage
 import hackaton.r2d2.travelblog.databinding.ActivityAuthBinding
 
 class AuthActivity : AppCompatActivity() {
@@ -42,18 +38,17 @@ class AuthActivity : AppCompatActivity() {
 
             val credential = GoogleAuthProvider.getCredential(account.idToken, null)
             val auth = Firebase.auth
-            auth.signInWithCredential(credential).addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser ?: return@addOnCompleteListener
-                    val userData = mapOf(
-                        "uid" to user.uid,
-                        "name" to user.displayName,
-                        "email" to user.email,
-                        "photoUrl" to user.photoUrl.toString(),
-                    )
-                    Firebase.firestore.collection("users").document(user.uid).update(userData)
-                    openUser(user)
-                } else showAuthFailed(task.exception)
+            auth.signInWithCredential(credential).onSuccessTask { authResult ->
+                val user = authResult.user!!
+                val userData = mapOf(
+                    "uid" to user.uid,
+                    "name" to user.displayName,
+                    "email" to user.email,
+                    "photoUrl" to user.photoUrl?.toString(),
+                )
+                Firebase.firestore.collection("users").document(user.uid).set(userData)
+            }.addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) openUser(auth.currentUser) else showAuthFailed(task.exception)
             }
         } catch (e: ApiException) {
             showAuthFailed(e)
