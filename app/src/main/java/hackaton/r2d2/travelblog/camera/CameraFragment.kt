@@ -28,6 +28,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.InputStreamContent
@@ -51,6 +52,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.concurrent.fixedRateTimer
 
 class CameraFragment : Fragment() {
 
@@ -280,23 +282,26 @@ class CameraFragment : Fragment() {
         val zoomLevel = 15f
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
+        //установить пин
         //googleMap.addMarker(MarkerOptions().position(homeLatLng))
 
         //применить стиль из папки Raw
         setMapStyle(googleMap)
 
+        fixedRateTimer(period = 60_000) {
+            getMyLocation(googleMap)
+        }
 
-        val myLocationButton: FloatingActionButton =
-            requireActivity().findViewById(R.id.fab_location_blogger)
-
-        myLocationButton.setOnClickListener {
+        binding.fabLocationBlogger.setOnClickListener {
             getMyLocation(googleMap)
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun getMyLocation(googleMap: GoogleMap) {
-
+        /**
+         * Здесь если успешно location возвращает latitude и longitude
+         */
         fusedLocationClient?.lastLocation
             ?.addOnSuccessListener { location: Location? ->
                 updateMapLocation(location, googleMap)
@@ -312,10 +317,16 @@ class CameraFragment : Fragment() {
                 )
             )
         )
+        googleMap.addMarker(MarkerOptions().position(
+            LatLng(
+                location?.latitude ?: 0.0,
+                location?.longitude ?: 0.0
+            )
+        ))
 
-        googleMap.moveCamera(CameraUpdateFactory.zoomTo(15.0f))
+/*        googleMap.moveCamera(CameraUpdateFactory.zoomTo(15.0f))
         location?.let {
-        }
+        }*/
     }
 
 
