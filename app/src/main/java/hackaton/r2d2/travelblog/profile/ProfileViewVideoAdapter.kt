@@ -3,12 +3,13 @@ package hackaton.r2d2.travelblog.profile
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import coil.api.load
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import hackaton.r2d2.travelblog.R
 import hackaton.r2d2.travelblog.model.Video
 
@@ -17,12 +18,26 @@ class ProfileViewVideoAdapter(
 ) : ListAdapter<Video, ProfileViewVideoAdapter.ProfileVideoViewHolder>(VIDEO_COMPARATOR) {
 
     class ProfileVideoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val imgVideoImageView: ImageView = itemView.findViewById(R.id.img_video)
+        private val youtubePlayer: YouTubePlayerView = itemView.findViewById(R.id.youtube_player_item)
         private val timeTextView: TextView = itemView.findViewById(R.id.tv_time)
 
         fun bind(video: Video) {
-            imgVideoImageView.load(video.thumbnail)
             timeTextView.text = video.start
+            youtubePlayer.getPlayerUiController().showFullscreenButton(true)
+
+            youtubePlayer.addYouTubePlayerListener(
+                object : AbstractYouTubePlayerListener() {
+                    override fun onReady(youTubePlayer: YouTubePlayer) {
+
+                        /**
+                        Set videoId
+                         */
+                        val videoId = video.id
+                        //первый параметр ID видео
+                        //второй параметр с какой секунды запустить
+                        youTubePlayer.cueVideo(videoId, 0f)
+                    }
+                })
         }
 
         companion object {
