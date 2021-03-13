@@ -20,6 +20,7 @@ class ProfileViewVideoAdapter(
     class ProfileVideoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val youtubePlayer: YouTubePlayerView = itemView.findViewById(R.id.youtube_player_item)
         private val timeTextView: TextView = itemView.findViewById(R.id.tv_time)
+        val content: View = itemView.findViewById(R.id.content)
 
         fun bind(video: Video) {
             timeTextView.text = video.start
@@ -55,7 +56,7 @@ class ProfileViewVideoAdapter(
 
     override fun onBindViewHolder(holder: ProfileVideoViewHolder, position: Int) {
         val current = getItem(position)
-        holder.itemView.setOnClickListener { onVideoClick(current) }
+        holder.content.setOnClickListener { onVideoClick(current) }
         holder.bind(current)
     }
 

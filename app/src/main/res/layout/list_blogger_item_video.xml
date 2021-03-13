@@ -13,6 +13,18 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_margin="@dimen/spacing_normal_16"/>
 
+    <View
+        android:id="@+id/content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
     <TextView
         android:id="@+id/tv_time"
         android:layout_width="wrap_content"
