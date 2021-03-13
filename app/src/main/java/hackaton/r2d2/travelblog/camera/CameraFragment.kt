@@ -28,6 +28,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.InputStreamContent
@@ -38,9 +39,11 @@ import com.google.api.services.youtube.YouTube
 import com.google.api.services.youtube.model.Video
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import hackaton.r2d2.travelblog.R
+import hackaton.r2d2.travelblog.currentLocation
 import hackaton.r2d2.travelblog.databinding.FragmentCameraBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,6 +54,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.concurrent.fixedRateTimer
 
 class CameraFragment : Fragment() {
 
@@ -61,7 +65,11 @@ class CameraFragment : Fragment() {
 
 
     //определение координат пользователя
-    private var fusedLocationClient: FusedLocationProviderClient? = null
+    private val fusedLocationClient: FusedLocationProviderClient by lazy {
+        LocationServices.getFusedLocationProviderClient(requireActivity())
+    }
+
+    private var timer: Timer? = null
 
     //видеозапись
     private lateinit var videoCapture: VideoCapture
@@ -258,10 +266,19 @@ class CameraFragment : Fragment() {
             .collection("users").document(user.uid)
             .collection("videos").document(videoId)
             .set(videoData)
+
+        Firebase.firestore
+            .collection("users").document(user.uid)
+            .update("lastVideo", videoData)
+
+        Firebase.firestore
+            .collection("users").document(user.uid)
+            .update("videos", FieldValue.increment(1))
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        cancelTimer()
         cameraExecutor.shutdown()
     }
 
@@ -273,49 +290,69 @@ class CameraFragment : Fragment() {
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        viewLifecycleOwner.lifecycleScope.launch {
+            //Начальные параметры
+            val homeLatLng = fusedLocationClient.currentLocation()
+            val zoomLevel = 15f
 
-        //Начальные параметры
-        val homeLatLng = LatLng(59.94019072565021, 30.31458675591602)
-        val zoomLevel = 15f
-
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
+        }
+        //установить пин
         //googleMap.addMarker(MarkerOptions().position(homeLatLng))
 
         //применить стиль из папки Raw
         setMapStyle(googleMap)
 
+        cancelTimer()
+        timer = fixedRateTimer(period = 60_000) { getMyLocation(googleMap, false) }
 
-        val myLocationButton: FloatingActionButton =
-            requireActivity().findViewById(R.id.fab_location_blogger)
+        binding.fabLocationBlogger.setOnClickListener { getMyLocation(googleMap, true) }
+    }
 
-        myLocationButton.setOnClickListener {
-            getMyLocation(googleMap)
+    private fun cancelTimer() {
+        timer?.let { timer ->
+            timer.cancel()
+            timer.purge()
         }
     }
 
     @SuppressLint("MissingPermission")
-    private fun getMyLocation(googleMap: GoogleMap) {
+    private fun getMyLocation(googleMap: GoogleMap, fromUser: Boolean) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val latLng = fusedLocationClient.currentLocation()
+            updateMapLocation(latLng, googleMap)
+            val user = Firebase.auth.currentUser
+            if (fromUser.not() && user != null) {
+                val locationData = mapOf(
+                    "latitude" to latLng?.latitude,
+                    "longitude" to latLng?.longitude,
+                    "timestamp" to Timestamp.now(),
+                    "record" to viewModel.statusRecording.value,
+                )
 
-        fusedLocationClient?.lastLocation
-            ?.addOnSuccessListener { location: Location? ->
-                updateMapLocation(location, googleMap)
+                Firebase.firestore
+                    .collection("users").document(user.uid)
+                    .collection("locations").document()
+                    .set(locationData)
+
+                Firebase.firestore
+                    .collection("users").document(user.uid)
+                    .update("lastLocation", locationData)
+
+                Firebase.firestore
+                    .collection("users").document(user.uid)
+                    .update("locations", FieldValue.increment(1))
             }
+        }
     }
 
-    private fun updateMapLocation(location: Location?, googleMap: GoogleMap) {
-        googleMap.moveCamera(
-            CameraUpdateFactory.newLatLng(
-                LatLng(
-                    location?.latitude ?: 0.0,
-                    location?.longitude ?: 0.0
-                )
-            )
-        )
+    private fun updateMapLocation(latLng: LatLng?, googleMap: GoogleMap) {
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng))
+        if (latLng != null) googleMap.addMarker(MarkerOptions().position(latLng))
 
-        googleMap.moveCamera(CameraUpdateFactory.zoomTo(15.0f))
+/*        googleMap.moveCamera(CameraUpdateFactory.zoomTo(15.0f))
         location?.let {
-        }
+        }*/
     }
 
 

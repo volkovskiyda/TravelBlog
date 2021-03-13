@@ -14,7 +14,7 @@ class Repository {
     suspend fun loadUsers(): List<User> = suspendCoroutine { continuation ->
         Firebase.firestore.collection("users").get().addOnCompleteListener { task ->
             task.result?.let { continuation.resume(it.toObjects(FirebaseUser::class.java).map { model ->
-                with(model) { User(uid, email, name, photoUrl) }
+                with(model) { User(uid, email, name, photoUrl, videos) }
             }) }
             task.exception?.let { continuation.resumeWithException(it) }
         }
