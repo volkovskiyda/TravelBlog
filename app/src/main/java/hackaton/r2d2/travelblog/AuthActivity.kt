@@ -16,9 +16,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.Scope
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import hackaton.r2d2.travelblog.databinding.ActivityAuthBinding
 
@@ -36,7 +38,16 @@ class AuthActivity : AppCompatActivity() {
 
             val credential = GoogleAuthProvider.getCredential(account.idToken, null)
             val auth = Firebase.auth
-            auth.signInWithCredential(credential).addOnCompleteListener(this) { task ->
+            auth.signInWithCredential(credential).onSuccessTask { authResult ->
+                val user = authResult.user!!
+                val userData = mapOf(
+                    "uid" to user.uid,
+                    "name" to user.displayName,
+                    "email" to user.email,
+                    "photoUrl" to user.photoUrl?.toString(),
+                )
+                Firebase.firestore.collection("users").document(user.uid).set(userData)
+            }.addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) openUser(auth.currentUser) else showAuthFailed(task.exception)
             }
         } catch (e: ApiException) {
@@ -44,14 +55,12 @@ class AuthActivity : AppCompatActivity() {
         }
     }
 
-    private fun showAuthFailed(exception: Exception?) {
-        Toast.makeText(this, exception?.message ?: "Failed to auth", Toast.LENGTH_LONG).show()
-    }
-
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted: Map<String, Boolean> ->
             if (granted.containsValue(false)) showAcceptAllPermissions(true) else auth()
         }
+
+    private val permissions = listOf(permission.CAMERA, permission.RECORD_AUDIO, permission.ACCESS_FINE_LOCATION)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +71,7 @@ class AuthActivity : AppCompatActivity() {
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .requestProfile()
+            .requestScopes(Scope("https://www.googleapis.com/auth/youtube"))
             .build()
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
@@ -71,11 +81,16 @@ class AuthActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        openUser(Firebase.auth.currentUser)
+
+        val user = Firebase.auth.currentUser ?: return
+        if (checkPermissions(permissions)) openUser(user) else showAcceptAllPermissions(true)
+    }
+
+    private fun showAuthFailed(exception: Exception?) {
+        Toast.makeText(this, exception?.message ?: "Failed to auth", Toast.LENGTH_LONG).show()
     }
 
     private fun checkAllPermissions() {
-        val permissions = listOf(permission.CAMERA, permission.ACCESS_FINE_LOCATION)
         if (checkPermissions(permissions)) auth()
         else {
             if (shouldShowRequestPermissionRationale(permissions)) showAcceptAllPermissions(false)
@@ -129,6 +144,7 @@ class AuthActivity : AppCompatActivity() {
 
     private fun openBlogger() {
         Toast.makeText(this, "openBlogger", Toast.LENGTH_SHORT).show()
-//        finish()
+        startActivity(Intent(this, BloggerActivity::class.java))
+        finish()
     }
 }

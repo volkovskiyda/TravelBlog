@@ -17,5 +17,9 @@ class BloggerActivity : AppCompatActivity() {
         binding = ActivityBloggerBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container, CameraFragment())
+            .commit()
     }
 }
