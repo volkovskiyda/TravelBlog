@@ -8,8 +8,7 @@ class CameraViewModel : ViewModel() {
 
 
     private val _statusRecording = MutableLiveData(false)
-    val statusRecording:LiveData<Boolean>
-    get() = _statusRecording
+    val statusRecording:LiveData<Boolean> get() = _statusRecording
 
     fun startRecord() {
         _statusRecording.value = true

@@ -11,8 +11,7 @@ import kotlinx.coroutines.launch
 class OverviewViewModel : ViewModel() {
 
     private val _allUsers = MutableLiveData<List<User>>()
-    val allUsers: LiveData<List<User>>
-        get() = _allUsers
+    val allUsers: LiveData<List<User>> get() = _allUsers
 
     init {
         viewModelScope.launch {

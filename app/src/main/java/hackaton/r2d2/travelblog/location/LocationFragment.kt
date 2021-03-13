@@ -2,12 +2,13 @@ package hackaton.r2d2.travelblog.location
 
 import android.annotation.SuppressLint
 import android.content.res.Resources
-import android.location.Location
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -17,6 +18,8 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -24,42 +27,39 @@ import hackaton.r2d2.travelblog.R
 import hackaton.r2d2.travelblog.currentLocation
 import hackaton.r2d2.travelblog.databinding.FragmentLocationBinding
 import kotlinx.coroutines.launch
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
-
 
 class LocationFragment : Fragment() {
-
-    //tag для логов
-    private val TAG = LocationFragment::class.java.simpleName
+    private val viewModel: LocationViewModel by viewModels()
 
     //определение координат пользователя
     private val fusedLocationClient: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(requireActivity())
     }
 
-    private var _binding: FragmentLocationBinding? = null
-    private val binding get() = _binding!!
-
+    private lateinit var binding: FragmentLocationBinding
 
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
         viewLifecycleOwner.lifecycleScope.launch {
             //Начальные параметры
             val homeLatLng = fusedLocationClient.currentLocation()
-            val zoomLevel = 15f
-
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, 15f))
         }
 
         //применить стиль из папки Raw
         setMapStyle(googleMap)
+        requireActivity().findViewById<FloatingActionButton>(R.id.fab_location_consumer).setOnClickListener { getMyLocation(googleMap) }
 
+        viewModel.locations.observe(viewLifecycleOwner) { locations ->
+            locations.windowed(2).forEach { (start, end) ->
+                googleMap.addPolyline(PolylineOptions().add(start.latLng, end.latLng).color(Color.BLUE))
+            }
 
-        val myLocationButton: FloatingActionButton =
-            requireActivity().findViewById(R.id.fab_location_consumer)
-
-        myLocationButton.setOnClickListener { getMyLocation(googleMap) }
+            for (latLng in locations.map { it.latLng }) {
+                val position = MarkerOptions().position(latLng)
+                googleMap.addMarker(position)
+            }
+        }
 
     }
 
@@ -71,11 +71,7 @@ class LocationFragment : Fragment() {
     }
 
     private fun updateMapLocation(latLng: LatLng?, googleMap: GoogleMap) {
-        googleMap.moveCamera(
-            CameraUpdateFactory.newLatLng(latLng)
-        )
-
-        googleMap.moveCamera(CameraUpdateFactory.zoomTo(15.0f))
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
     }
 
 
@@ -84,21 +80,16 @@ class LocationFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentLocationBinding.inflate(inflater, container, false)
+        var player: YouTubePlayer? = null
+        binding = FragmentLocationBinding.inflate(inflater, container, false)
 
         binding.youtubePlayer.getPlayerUiController().showFullscreenButton(true)
 
         binding.youtubePlayer.addYouTubePlayerListener(
             object : AbstractYouTubePlayerListener() {
                 override fun onReady(youTubePlayer: YouTubePlayer) {
-
-                    /**
-                    Set videoId
-                     */
-                    val videoId = "sZ4crcx7FLU"
-                    //первый параметр ID видео
-                    //второй параметр с какой секунды запустить
-                    youTubePlayer.cueVideo(videoId, 0f)
+                    player = youTubePlayer
+                    youTubePlayer.cueVideo(viewModel.selectedVideo.value!!.id, 0f)
                 }
             })
         binding.youtubePlayer.getPlayerUiController().setFullScreenButtonClickListener {
@@ -111,12 +102,9 @@ class LocationFragment : Fragment() {
             }
         }
 
-        return binding.root
-    }
+        viewModel.seekPosition.observe(viewLifecycleOwner) { position -> player?.seekTo(position) }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.graphics.Color.GRAY
 import android.graphics.Color.RED
-import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -29,7 +28,6 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.InputStreamContent
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -293,9 +291,7 @@ class CameraFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             //Начальные параметры
             val homeLatLng = fusedLocationClient.currentLocation()
-            val zoomLevel = 15f
-
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, 15f))
         }
         //установить пин
         //googleMap.addMarker(MarkerOptions().position(homeLatLng))

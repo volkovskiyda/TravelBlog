@@ -12,24 +12,21 @@ import kotlinx.coroutines.launch
 class ProfileViewModel : ViewModel() {
 
     private val _selectedUser = MutableLiveData<User>()
-    val selectedUser: LiveData<User>
-        get() = _selectedUser
+    val selectedUser: LiveData<User> get() = _selectedUser
 
     private val _allVideo = MutableLiveData<List<Video>>()
-    val allVideo: LiveData<List<Video>>
-        get() = _allVideo
+    val allVideo: LiveData<List<Video>> get() = _allVideo
 
     init {
-        val repository = Repository.instance
         viewModelScope.launch {
-            val user = repository.loadSelectedUser()
-            val videos = runCatching { repository.loadVideos(user.uid) }.getOrNull().orEmpty()
+            val user = Repository.instance.loadSelectedUser()
+            val videos = runCatching { Repository.instance.loadVideos(user.uid) }.getOrNull().orEmpty()
             _selectedUser.value = user
             _allVideo.value = videos
         }
     }
 
     fun displayVideo(video: Video) {
-
+        Repository.instance.selectVideo(video)
     }
 }

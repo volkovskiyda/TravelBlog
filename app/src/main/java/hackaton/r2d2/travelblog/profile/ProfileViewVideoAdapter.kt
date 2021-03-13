@@ -23,7 +23,7 @@ class ProfileViewVideoAdapter(
         val content: View = itemView.findViewById(R.id.content)
 
         fun bind(video: Video) {
-            timeTextView.text = video.start
+            timeTextView.text = video.start.toString()
             youtubePlayer.getPlayerUiController().showFullscreenButton(true)
 
             youtubePlayer.addYouTubePlayerListener(
