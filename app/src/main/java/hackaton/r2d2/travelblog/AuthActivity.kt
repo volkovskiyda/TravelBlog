@@ -45,6 +45,8 @@ class AuthActivity : AppCompatActivity() {
                     "name" to user.displayName,
                     "email" to user.email,
                     "photoUrl" to user.photoUrl?.toString(),
+                    "locations" to 0,
+                    "videos" to 0,
                 )
                 Firebase.firestore.collection("users").document(user.uid).set(userData)
             }.addOnCompleteListener(this) { task ->
