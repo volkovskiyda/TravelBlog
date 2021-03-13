@@ -73,6 +73,7 @@ dependencies {
 
     implementation "androidx.activity:activity-ktx:1.2.1"
 
+    //cameraX
     implementation "androidx.camera:camera-camera2:1.1.0-alpha02"
     implementation "androidx.camera:camera-lifecycle:1.1.0-alpha02"
 
@@ -92,6 +93,7 @@ dependencies {
     implementation "com.google.firebase:firebase-auth-ktx"
 
     implementation "com.google.dagger:hilt-android:$hilt_version"
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.0'
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
 
     implementation "androidx.hilt:hilt-work:1.0.0-beta01"
@@ -100,7 +102,10 @@ dependencies {
     implementation 'com.firebaseui:firebase-ui-auth:6.4.0'
     implementation 'com.google.android.gms:play-services-auth:19.0.0'
 
+    //googlePlay Services
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    //maps
+    implementation "com.google.android.gms:play-services-location:18.0.0"
 
     implementation 'androidx.cardview:cardview:1.0.0'
 
