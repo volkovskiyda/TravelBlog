@@ -2,36 +2,20 @@ package hackaton.r2d2.travelblog
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import hackaton.r2d2.travelblog.databinding.ActivityMainBinding
+import hackaton.r2d2.travelblog.location.LocationFragment
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var map: GoogleMap
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        val fragment = supportFragmentManager.findFragmentById(R.id.map_consumer) as SupportMapFragment
-        fragment.getMapAsync(this)
-    }
-
-    override fun onMapReady(googleMap: GoogleMap) {
-        map = googleMap
-
-        val sydney = LatLng(-34.0, 151.0)
-        map.addMarker(
-            MarkerOptions()
-            .position(sydney)
-            .title("Marker in Sydney"))
-        map.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        if (savedInstanceState == null)
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, LocationFragment())
+                .commit()
     }
 }

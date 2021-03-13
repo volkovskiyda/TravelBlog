@@ -42,6 +42,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import hackaton.r2d2.travelblog.R
+import hackaton.r2d2.travelblog.currentLocation
 import hackaton.r2d2.travelblog.databinding.FragmentCameraBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -63,7 +64,11 @@ class CameraFragment : Fragment() {
 
 
     //определение координат пользователя
-    private var fusedLocationClient: FusedLocationProviderClient? = null
+    private val fusedLocationClient: FusedLocationProviderClient by lazy {
+        LocationServices.getFusedLocationProviderClient(requireActivity())
+    }
+
+    private var timer: Timer? = null
 
     //видеозапись
     private lateinit var videoCapture: VideoCapture
@@ -264,6 +269,7 @@ class CameraFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        cancelTimer()
         cameraExecutor.shutdown()
     }
 
@@ -275,54 +281,56 @@ class CameraFragment : Fragment() {
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        viewLifecycleOwner.lifecycleScope.launch {
+            //Начальные параметры
+            val homeLatLng = fusedLocationClient.currentLocation()
+            val zoomLevel = 15f
 
-        //Начальные параметры
-        val homeLatLng = LatLng(59.94019072565021, 30.31458675591602)
-        val zoomLevel = 15f
-
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
+        }
         //установить пин
         //googleMap.addMarker(MarkerOptions().position(homeLatLng))
 
         //применить стиль из папки Raw
         setMapStyle(googleMap)
 
-        fixedRateTimer(period = 60_000) {
-            getMyLocation(googleMap)
-        }
+        cancelTimer()
+        timer = fixedRateTimer(period = 60_000) { getMyLocation(googleMap, false) }
 
-        binding.fabLocationBlogger.setOnClickListener {
-            getMyLocation(googleMap)
+        binding.fabLocationBlogger.setOnClickListener { getMyLocation(googleMap, true) }
+    }
+
+    private fun cancelTimer() {
+        timer?.let { timer ->
+            timer.cancel()
+            timer.purge()
         }
     }
 
     @SuppressLint("MissingPermission")
-    private fun getMyLocation(googleMap: GoogleMap) {
-        /**
-         * Здесь если успешно location возвращает latitude и longitude
-         */
-        fusedLocationClient?.lastLocation
-            ?.addOnSuccessListener { location: Location? ->
-                updateMapLocation(location, googleMap)
+    private fun getMyLocation(googleMap: GoogleMap, fromUser: Boolean) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val latLng = fusedLocationClient.currentLocation()
+            updateMapLocation(latLng, googleMap)
+            val user = Firebase.auth.currentUser
+            if (fromUser.not() && user != null) {
+                val locationData = mapOf(
+                    "latitude" to latLng?.latitude,
+                    "longitude" to latLng?.longitude,
+                    "timestamp" to Timestamp.now(),
+                )
+
+                Firebase.firestore
+                    .collection("users").document(user.uid)
+                    .collection("locations").document()
+                    .set(locationData)
             }
+        }
     }
 
-    private fun updateMapLocation(location: Location?, googleMap: GoogleMap) {
-        googleMap.moveCamera(
-            CameraUpdateFactory.newLatLng(
-                LatLng(
-                    location?.latitude ?: 0.0,
-                    location?.longitude ?: 0.0
-                )
-            )
-        )
-        googleMap.addMarker(MarkerOptions().position(
-            LatLng(
-                location?.latitude ?: 0.0,
-                location?.longitude ?: 0.0
-            )
-        ))
+    private fun updateMapLocation(latLng: LatLng?, googleMap: GoogleMap) {
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng))
+        if (latLng != null) googleMap.addMarker(MarkerOptions().position(latLng))
 
 /*        googleMap.moveCamera(CameraUpdateFactory.zoomTo(15.0f))
         location?.let {
