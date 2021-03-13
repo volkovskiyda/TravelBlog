@@ -318,6 +318,7 @@ class CameraFragment : Fragment() {
                     "latitude" to latLng?.latitude,
                     "longitude" to latLng?.longitude,
                     "timestamp" to Timestamp.now(),
+                    "record" to viewModel.statusRecording.value,
                 )
 
                 Firebase.firestore
