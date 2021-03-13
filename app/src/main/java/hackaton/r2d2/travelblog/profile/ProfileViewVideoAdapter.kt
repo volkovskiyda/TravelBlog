@@ -4,44 +4,44 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.api.load
-import com.google.api.services.youtube.model.Video
 import hackaton.r2d2.travelblog.R
+import hackaton.r2d2.travelblog.model.Video
 
-class ProfileViewVideoAdapter : ListAdapter<Video, ProfileViewVideoAdapter.ProfileViewHolder>(
-    VIDEO_COMPARATOR
-) {
+class ProfileViewVideoAdapter(
+    private val onVideoClick: (Video) -> Unit
+) : ListAdapter<Video, ProfileViewVideoAdapter.ProfileVideoViewHolder>(VIDEO_COMPARATOR) {
 
-    class ProfileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
-        private val imgVideoImageView: ImageView = itemView.findViewById(R.id.tv_img_video)
+    class ProfileVideoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val imgVideoImageView: ImageView = itemView.findViewById(R.id.img_video)
+        private val timeTextView: TextView = itemView.findViewById(R.id.tv_time)
 
-        fun bind(imgUrl: String) {
-           imgVideoImageView.load(imgUrl)
+        fun bind(video: Video) {
+            imgVideoImageView.load(video.thumbnail)
+            timeTextView.text = video.start
         }
 
         companion object {
-            fun create(parent: ViewGroup): ProfileViewHolder {
+            fun create(parent: ViewGroup): ProfileVideoViewHolder {
                 val view: View = LayoutInflater.from(parent.context)
                     .inflate(R.layout.list_blogger_item_video, parent, false)
-                return ProfileViewHolder(
-                    view
-                )
+                return ProfileVideoViewHolder(view)
             }
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProfileViewHolder {
-        return ProfileViewHolder.create(
-            parent
-        )
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProfileVideoViewHolder {
+        return ProfileVideoViewHolder.create(parent)
     }
 
-    override fun onBindViewHolder(holder: ProfileViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ProfileVideoViewHolder, position: Int) {
         val current = getItem(position)
-        holder.bind("Картинка")
+        holder.itemView.setOnClickListener { onVideoClick(current) }
+        holder.bind(current)
     }
 
     companion object {

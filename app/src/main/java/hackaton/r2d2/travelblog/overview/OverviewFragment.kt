@@ -5,15 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.fragment.app.viewModels
+import hackaton.r2d2.travelblog.R
 import hackaton.r2d2.travelblog.databinding.FragmentOverviewBinding
+import hackaton.r2d2.travelblog.profile.ProfileFragment
 
 class OverviewFragment : Fragment() {
 
-    private val viewModel: OverviewViewModel by lazy {
-        ViewModelProviders.of(this).get(OverviewViewModel::class.java)
-    }
+    private val viewModel: OverviewViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -23,18 +22,18 @@ class OverviewFragment : Fragment() {
 
         val binding = FragmentOverviewBinding.inflate(inflater)
 
-        binding.videoList.adapter = OverviewAdapter(OverviewAdapter.OnClickListener {
-            viewModel.displayUserDetails(it)
-        })
+        val adapter = OverviewAdapter { user ->
+            viewModel.displayUserDetails(user)
+            parentFragmentManager.beginTransaction()
+                .remove(this)
+                .replace(android.R.id.content, ProfileFragment())
+                .commitAllowingStateLoss()
 
-        viewModel.navToSelectedUser.observe(this.viewLifecycleOwner, Observer {
-            //navigate to Profile
+        }
+        binding.videoList.adapter = adapter
 
-            viewModel.displayUserDetailsCompleted()
-        })
+        viewModel.allUsers.observe(viewLifecycleOwner) { users -> adapter.submitList(users) }
 
         return binding.root
     }
-
-
 }

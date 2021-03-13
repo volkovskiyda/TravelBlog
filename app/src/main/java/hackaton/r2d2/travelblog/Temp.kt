@@ -6,10 +6,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 //Repository usage
-fun repository() {
+private fun repository() {
 //    val scope = lifecycleScope
     val scope = CoroutineScope(Dispatchers.Main)
-    val repository = Repository()
+    val repository = Repository.instance
     scope.launch {
         val users = repository.loadUsers()
         val user = users.first()

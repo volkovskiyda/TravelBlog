@@ -3,11 +3,10 @@ package hackaton.r2d2.travelblog.profile
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import hackaton.r2d2.travelblog.Repository
 import hackaton.r2d2.travelblog.model.User
 import hackaton.r2d2.travelblog.model.Video
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class ProfileViewModel : ViewModel() {
@@ -20,23 +19,17 @@ class ProfileViewModel : ViewModel() {
     val allVideo: LiveData<List<Video>>
         get() = _allVideo
 
-    fun updateUser(user: User) {
-        _selectedUser.value = user
-        loadVideo()
+    init {
+        val repository = Repository.instance
+        viewModelScope.launch {
+            val user = repository.loadSelectedUser()
+            val videos = runCatching { repository.loadVideos(user.uid) }.getOrNull().orEmpty()
+            _selectedUser.value = user
+            _allVideo.value = videos
+        }
     }
 
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    fun displayVideo(video: Video) {
 
-    private fun loadVideo() {
-        val repository = Repository()
-        coroutineScope.launch {
-            try {
-                val userId = selectedUser.value!!.uid
-                val loadVideo = repository.loadVideos(userId)
-                _allVideo.value = loadVideo
-            } catch (e: Exception) {
-                _allVideo.value = ArrayList()
-            }
-        }
     }
 }

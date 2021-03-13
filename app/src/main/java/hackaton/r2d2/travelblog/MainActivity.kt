@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import hackaton.r2d2.travelblog.databinding.ActivityMainBinding
 import hackaton.r2d2.travelblog.location.LocationFragment
+import hackaton.r2d2.travelblog.overview.OverviewFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -15,7 +16,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         if (savedInstanceState == null)
             supportFragmentManager.beginTransaction()
-                .replace(R.id.container, LocationFragment())
+                .replace(R.id.container, OverviewFragment())
                 .commit()
     }
 }

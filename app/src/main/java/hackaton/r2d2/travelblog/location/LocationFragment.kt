@@ -130,10 +130,7 @@ class LocationFragment : Fragment() {
     private fun setMapStyle(map: GoogleMap) {
         try {
             val success = map.setMapStyle(
-                MapStyleOptions.loadRawResourceStyle(
-                    requireContext(),
-                    R.raw.map_style
-                )
+                MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style)
             )
             if (!success) {
                 //Timber.tag(TAG).i("Style apply failed")
