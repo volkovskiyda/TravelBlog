@@ -6,11 +6,23 @@ import hackaton.r2d2.travelblog.model.User
 import hackaton.r2d2.travelblog.model.Video
 import hackaton.r2d2.travelblog.model.firebase.FirebaseUser
 import hackaton.r2d2.travelblog.model.firebase.FirebaseVideo
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class Repository {
+class Repository private constructor() {
+
+    companion object { val instance by lazy { Holder.instance } }
+
+    private object Holder { val instance = Repository() }
+
+    private val selectedUser = MutableStateFlow<User?>(null)
+
     suspend fun loadUsers(): List<User> = suspendCoroutine { continuation ->
         Firebase.firestore.collection("users").get().addOnCompleteListener { task ->
             task.result?.let { continuation.resume(it.toObjects(FirebaseUser::class.java).map { model ->
@@ -42,4 +54,10 @@ class Repository {
                 task.exception?.let { continuation.resumeWithException(it) }
             }
     }
+
+    fun selectUser(user: User) {
+        selectedUser.value = user
+    }
+
+    suspend fun loadSelectedUser(): User = selectedUser.filterNotNull().first()
 }

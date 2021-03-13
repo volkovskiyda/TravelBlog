@@ -7,8 +7,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @SuppressLint("MissingPermission")
-suspend fun FusedLocationProviderClient.currentLocation(): LatLng? = suspendCoroutine { continuation ->
+suspend fun FusedLocationProviderClient.currentLocation(): LatLng = suspendCoroutine { continuation ->
     lastLocation.addOnSuccessListener { location ->
-        continuation.resume(location.let { LatLng(it.latitude, it.longitude) })
+        location?.let { LatLng(it.latitude, it.longitude) }?.run { continuation.resume(this) }
     }
 }
