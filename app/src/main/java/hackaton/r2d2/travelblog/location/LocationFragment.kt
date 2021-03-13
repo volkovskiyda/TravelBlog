@@ -4,10 +4,10 @@ import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.location.Location
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -17,7 +17,10 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import hackaton.r2d2.travelblog.R
+import hackaton.r2d2.travelblog.databinding.FragmentLocationBinding
 
 
 class LocationFragment : Fragment() {
@@ -27,6 +30,9 @@ class LocationFragment : Fragment() {
 
     //определение координат пользователя
     private var fusedLocationClient: FusedLocationProviderClient? = null
+
+    private var _binding: FragmentLocationBinding? = null
+    private val binding get() = _binding!!
 
 
     @SuppressLint("MissingPermission")
@@ -84,14 +90,45 @@ class LocationFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        _binding = FragmentLocationBinding.inflate(inflater, container, false)
 
+        binding.youtubePlayer.getPlayerUiController().showFullscreenButton(true)
 
-        return inflater.inflate(R.layout.fragment_location, container, false)
+        binding.youtubePlayer.addYouTubePlayerListener(
+            object : AbstractYouTubePlayerListener() {
+                override fun onReady(youTubePlayer: YouTubePlayer) {
+
+                    /**
+                    Set videoId
+                     */
+                    val videoId = "sZ4crcx7FLU"
+                    //первый параметр ID видео
+                    //второй параметр с какой секунды запустить
+                    youTubePlayer.cueVideo(videoId, 0f)
+                }
+            })
+        binding.youtubePlayer.getPlayerUiController().setFullScreenButtonClickListener {
+            if (binding.youtubePlayer.isFullScreen()) {
+                binding.youtubePlayer.exitFullScreen()
+                binding.fabLocationConsumer.visibility = View.VISIBLE
+            } else {
+                binding.youtubePlayer.enterFullScreen()
+                binding.fabLocationConsumer.visibility = View.GONE
+            }
+        }
+
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map_consumer) as SupportMapFragment?
+        val mapFragment =
+            childFragmentManager.findFragmentById(R.id.map_consumer) as SupportMapFragment?
 
         mapFragment?.getMapAsync(callback)
     }
