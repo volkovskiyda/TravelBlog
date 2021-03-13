@@ -36,7 +36,9 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.client.util.ExponentialBackOff
 import com.google.api.services.youtube.YouTube
 import com.google.api.services.youtube.model.Video
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import hackaton.r2d2.travelblog.R
 import hackaton.r2d2.travelblog.databinding.FragmentCameraBinding
@@ -135,19 +137,15 @@ class CameraFragment : Fragment() {
             SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis()) + ".mp4"
         val videoFile = File(outputDirectory, fileName)
 
+        val startTS = Timestamp.now()
         videoCapture.startRecording(
             VideoCapture.OutputFileOptions.Builder(videoFile).build(),
             cameraExecutor,
             object : VideoCapture.OnVideoSavedCallback {
                 override fun onVideoSaved(outputFileResults: VideoCapture.OutputFileResults) {
-                    val savedUri = Uri.fromFile(videoFile)
-                    val msg = "Video saved succeeded: $savedUri"
-                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
-                    }
-                    Log.d(TAG, msg)
-
-                    uploadVideo(videoFile)
+                    Log.d(TAG, "Video saved succeeded: ${Uri.fromFile(videoFile)}")
+                    val endTS = Timestamp.now()
+                    uploadVideo(videoFile, startTS, endTS)
                 }
 
                 override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
@@ -211,25 +209,55 @@ class CameraFragment : Fragment() {
         mapFragment?.getMapAsync(callback)
     }
 
-    private fun uploadVideo(file: File) {
+    private fun uploadVideo(file: File, startTS: Timestamp, endTS: Timestamp) {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val video = Video()
-
-            val mediaContent = InputStreamContent(
-                "application/octet-stream",
-                BufferedInputStream(FileInputStream(file))
+            uploadYoutubeVideo(
+                InputStreamContent(
+                    "application/octet-stream",
+                    BufferedInputStream(FileInputStream(file))
+                ).setLength(file.length()), startTS, endTS
             )
-            mediaContent.length = file.length()
-            uploadYoutubeVideo(video, mediaContent)
         }
     }
 
-    private fun uploadYoutubeVideo(video: Video, mediaContent: InputStreamContent) {
-        val request = youTube.videos().insert(listOf("id,snippet,statistics"), video, mediaContent)
-        val response: Video = request.execute()
+    private fun uploadYoutubeVideo(
+        mediaContent: InputStreamContent,
+        startTS: Timestamp,
+        endTS: Timestamp
+    ) = try {
+            val response: Video = youTube.videos().insert(listOf("id,snippet,statistics"), Video(), mediaContent).execute()
+            updateVideoToFirestore(response, startTS, endTS)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to upload youtube video", e)
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                Toast.makeText(requireContext(), "Failed to upload video", Toast.LENGTH_SHORT).show()
+            }
+        }
 
-        //youtube video identifier
-        response.id
+    private fun updateVideoToFirestore(video: Video, startTS: Timestamp, endTS: Timestamp) {
+        val user = Firebase.auth.currentUser
+        val videoId = video.id
+
+        if (user == null) {
+            Log.e(TAG, "User is null, we cannot upload info about video: $videoId")
+            return
+        }
+
+        val videoData = mapOf(
+            "id" to videoId,
+            "start" to startTS,
+            "end" to endTS,
+            "title" to video.snippet.title,
+            "description" to video.snippet.description,
+            "channelId" to video.snippet.channelId,
+            "channelTitle" to video.snippet.channelTitle,
+            "publishedAt" to video.snippet.publishedAt.value,
+            "thumbnail" to video.snippet.thumbnails.high.url,
+        )
+        Firebase.firestore
+            .collection("users").document(user.uid)
+            .collection("videos").document(videoId)
+            .set(videoData)
     }
 
     override fun onDestroy() {
