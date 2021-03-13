@@ -110,8 +110,11 @@ class LocationFragment : Fragment() {
         binding.youtubePlayer.getPlayerUiController().setFullScreenButtonClickListener {
             if (binding.youtubePlayer.isFullScreen()) {
                 binding.youtubePlayer.exitFullScreen()
-            } else
+                binding.fabLocationConsumer.visibility = View.VISIBLE
+            } else {
                 binding.youtubePlayer.enterFullScreen()
+                binding.fabLocationConsumer.visibility = View.GONE
+            }
         }
 
         return binding.root
