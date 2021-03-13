@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:layout_margin="@dimen/spacing_tiny_4"
+    app:cardCornerRadius="5dp"
+    app:cardUseCompatPadding="true">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/card_item"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="@dimen/spacing_tiny_4"
-        app:cardCornerRadius="5dp"
-        app:cardUseCompatPadding="true">
-
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="@dimen/spacing_normal_16"
@@ -23,38 +20,34 @@
                 android:id="@+id/iv_avatar"
                 android:layout_width="@dimen/avatar_round_size"
                 android:layout_height="@dimen/avatar_round_size"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 android:src="@drawable/ic_avatar" />
 
-            <LinearLayout
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/tv_name"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:layout_gravity="center"
-                android:layout_margin="@dimen/font_normal_16"
-                android:orientation="vertical">
+                app:layout_constraintLeft_toRightOf="@+id/iv_avatar"
+                app:layout_constraintTop_toTopOf="@id/iv_avatar"
+                app:layout_constraintBottom_toTopOf="@id/tv_count"
+                app:layout_constraintVertical_chainStyle="packed"
+                android:layout_marginStart="@dimen/spacing_normal_16"
+                android:textSize="@dimen/font_large_20"
+                android:maxLines="1"
+                tools:text="Ванька блогеров" />
 
-                <TextView
-                    android:id="@+id/tv_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="@dimen/font_large_20"
-                    android:maxLines="1"
-                    android:layout_gravity="left|center"
-                    tools:text="Ванька блогеров" />
+            <TextView
+                android:id="@+id/tv_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintLeft_toRightOf="@+id/iv_avatar"
+                app:layout_constraintTop_toBottomOf="@id/tv_name"
+                app:layout_constraintBottom_toBottomOf="@id/iv_avatar"
+                android:layout_marginStart="@dimen/spacing_normal_16"
+                android:textSize="@dimen/font_normal_16"
+                android:maxLines="1"
+                tools:text="22 видео" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <TextView
-                    android:id="@+id/tv_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="@dimen/font_large_20"
-                    android:maxLines="1"
-                    android:layout_gravity="left|center"
-                    tools:text="22 видео" />
-            </LinearLayout>
-
-
-        </LinearLayout>
-
-    </androidx.cardview.widget.CardView>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
