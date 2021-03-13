@@ -40,6 +40,9 @@ class LocationFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
+
+        googleMap.setOnPoiClickListener { poi -> viewModel.selectLocation(poi.latLng) }
+
         viewLifecycleOwner.lifecycleScope.launch {
             //Начальные параметры
             val homeLatLng = fusedLocationClient.currentLocation()

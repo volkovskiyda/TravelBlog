@@ -2,6 +2,7 @@ package hackaton.r2d2.travelblog
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import hackaton.r2d2.travelblog.model.Location
@@ -43,7 +44,10 @@ class Repository private constructor() {
     }
 
     suspend fun loadVideos(userId: String): List<Video> = suspendCoroutine { continuation ->
-        Firebase.firestore.collection("users").document(userId).collection("videos").get()
+        Firebase.firestore.collection("users").document(userId)
+            .collection("videos")
+            .orderBy("start", Query.Direction.DESCENDING)
+            .get()
             .addOnCompleteListener { task ->
                 task.result?.let {
                     continuation.resume(it.toObjects(FirebaseVideo::class.java).map { model ->

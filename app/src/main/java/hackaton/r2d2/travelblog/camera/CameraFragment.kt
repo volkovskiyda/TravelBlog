@@ -316,12 +316,12 @@ class CameraFragment : Fragment() {
     private fun getMyLocation(googleMap: GoogleMap, fromUser: Boolean) {
         viewLifecycleOwner.lifecycleScope.launch {
             val latLng = fusedLocationClient.currentLocation()
-            updateMapLocation(latLng, googleMap)
+            updateMapLocation(latLng, googleMap, fromUser)
             val user = Firebase.auth.currentUser
             if (fromUser.not() && user != null) {
                 val locationData = mapOf(
-                    "latitude" to latLng?.latitude,
-                    "longitude" to latLng?.longitude,
+                    "latitude" to latLng.latitude,
+                    "longitude" to latLng.longitude,
                     "timestamp" to Timestamp.now(),
                     "record" to viewModel.statusRecording.value,
                 )
@@ -342,9 +342,9 @@ class CameraFragment : Fragment() {
         }
     }
 
-    private fun updateMapLocation(latLng: LatLng?, googleMap: GoogleMap) {
+    private fun updateMapLocation(latLng: LatLng?, googleMap: GoogleMap, fromUser: Boolean) {
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng))
-        if (latLng != null) googleMap.addMarker(MarkerOptions().position(latLng))
+        if (latLng != null && fromUser.not()) googleMap.addMarker(MarkerOptions().position(latLng))
 
 /*        googleMap.moveCamera(CameraUpdateFactory.zoomTo(15.0f))
         location?.let {
