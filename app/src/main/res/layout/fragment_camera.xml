@@ -9,12 +9,12 @@
 
     <Button
         android:id="@+id/camera_capture_button"
-        android:layout_width="110dp"
+        android:layout_width="100dp"
         android:layout_height="100dp"
-        android:layout_marginBottom="@dimen/margin_one"
-        android:elevation="2dp"
         android:scaleType="fitCenter"
-        android:text="@string/start_recording"
+        app:icon="@drawable/ic_baseline_camera_24"
+        app:iconGravity="top"
+        app:iconPadding="@dimen/margin_half"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -23,12 +23,15 @@
         android:id="@+id/viewFinder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
     </androidx.camera.view.PreviewView>
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/map"
+        android:id="@+id/map_blogger"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -41,7 +44,7 @@
         map:layout_constraintEnd_toEndOf="parent"
         map:layout_constraintStart_toStartOf="parent"
         map:layout_constraintTop_toBottomOf="parent"
-        tools:context=".locationFragment">
+        tools:context=".cameraFragment">
 
     </androidx.fragment.app.FragmentContainerView>
 
@@ -58,5 +61,21 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.66"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_location_blogger"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_one"
+        android:layout_marginEnd="@dimen/margin_one"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_target"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        map:backgroundTint="@color/color_gray"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="ContentDescription" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

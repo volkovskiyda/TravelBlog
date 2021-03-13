@@ -1,8 +1,6 @@
 package hackaton.r2d2.travelblog.location
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.location.Location
 import android.os.Bundle
@@ -10,8 +8,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -50,7 +46,7 @@ class LocationFragment : Fragment() {
 
 
         val myLocationButton: FloatingActionButton =
-            requireActivity().findViewById(R.id.fab_location)
+            requireActivity().findViewById(R.id.fab_location_consumer)
 
         myLocationButton.setOnClickListener {
             getMyLocation(googleMap)
@@ -95,7 +91,7 @@ class LocationFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map_consumer) as SupportMapFragment?
 
         mapFragment?.getMapAsync(callback)
     }
