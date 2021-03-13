@@ -29,12 +29,15 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.api.client.auth.oauth.OAuthParameters
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.InputStreamContent
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.client.util.ExponentialBackOff
 import com.google.api.services.youtube.YouTube
 import com.google.api.services.youtube.model.Video
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import hackaton.r2d2.travelblog.R
 import hackaton.r2d2.travelblog.databinding.FragmentCameraBinding
 import kotlinx.coroutines.Dispatchers
@@ -67,10 +70,17 @@ class CameraFragment : Fragment() {
 
     private lateinit var binding: FragmentCameraBinding
 
+    private lateinit var googleAccountCredential: GoogleAccountCredential
     private lateinit var youTube: YouTube
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val email = Firebase.auth.currentUser?.email
+        googleAccountCredential = GoogleAccountCredential.usingOAuth2(
+            requireContext(),
+            listOf("https://www.googleapis.com/auth/youtube")
+        ).setBackOff(ExponentialBackOff()).setSelectedAccountName(email)
 
         val httpTransport = NetHttpTransport()
         val jsonFactory = JacksonFactory.getDefaultInstance()
@@ -78,7 +88,7 @@ class CameraFragment : Fragment() {
         youTube = YouTube.Builder(
             httpTransport,
             jsonFactory,
-            OAuthParameters()
+            googleAccountCredential
         ).setApplicationName("TravelBlog").build()
 
         outputDirectory = getOutputDirectory()
@@ -121,12 +131,9 @@ class CameraFragment : Fragment() {
     private fun startRecording() {
 
         // Create time-stamped output file to hold the image
-        val videoFile = File(
-            outputDirectory,
-            SimpleDateFormat(
-                FILENAME_FORMAT, Locale.US
-            ).format(System.currentTimeMillis()) + ".mp4"
-        )
+        val fileName =
+            SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis()) + ".mp4"
+        val videoFile = File(outputDirectory, fileName)
 
         videoCapture.startRecording(
             VideoCapture.OutputFileOptions.Builder(videoFile).build(),
@@ -218,8 +225,11 @@ class CameraFragment : Fragment() {
     }
 
     private fun uploadYoutubeVideo(video: Video, mediaContent: InputStreamContent) {
-        val request: YouTube.Videos.Insert = youTube.videos().insert(listOf(""), video, mediaContent)
+        val request = youTube.videos().insert(listOf("id,snippet,statistics"), video, mediaContent)
         val response: Video = request.execute()
+
+        //youtube video identifier
+        response.id
     }
 
     override fun onDestroy() {
