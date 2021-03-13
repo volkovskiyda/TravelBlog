@@ -39,6 +39,7 @@ import com.google.api.services.youtube.YouTube
 import com.google.api.services.youtube.model.Video
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import hackaton.r2d2.travelblog.R
@@ -265,6 +266,14 @@ class CameraFragment : Fragment() {
             .collection("users").document(user.uid)
             .collection("videos").document(videoId)
             .set(videoData)
+
+        Firebase.firestore
+            .collection("users").document(user.uid)
+            .update("lastVideo", videoData)
+
+        Firebase.firestore
+            .collection("users").document(user.uid)
+            .update("videos", FieldValue.increment(1))
     }
 
     override fun onDestroy() {
@@ -325,6 +334,14 @@ class CameraFragment : Fragment() {
                     .collection("users").document(user.uid)
                     .collection("locations").document()
                     .set(locationData)
+
+                Firebase.firestore
+                    .collection("users").document(user.uid)
+                    .update("lastLocation", locationData)
+
+                Firebase.firestore
+                    .collection("users").document(user.uid)
+                    .update("locations", FieldValue.increment(1))
             }
         }
     }

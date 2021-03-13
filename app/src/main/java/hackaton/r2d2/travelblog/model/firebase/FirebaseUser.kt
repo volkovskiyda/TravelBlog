@@ -8,7 +8,9 @@ data class FirebaseUser(
     val email: String,
     val name: String,
     val photoUrl: String,
+    val videos: Long,
+    val locations: Long,
 ) {
     @Suppress("unused")
-    constructor() : this("", "", "", "")
+    constructor() : this("", "", "", "", 0, 0)
 }
