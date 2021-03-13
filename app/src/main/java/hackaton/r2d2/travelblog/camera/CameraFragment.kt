@@ -81,6 +81,7 @@ class CameraFragment : Fragment() {
             // init config here
         }.build()
 
+
         //обработчик нажатия
         binding.cameraCaptureButton.setOnClickListener {
             if (viewModel.statusRecording.value == false) {
@@ -112,7 +113,7 @@ class CameraFragment : Fragment() {
     @SuppressLint("RestrictedApi")
     private fun startRecording() {
 
-        val videoCapture = videoCapture ?: return
+        val videoCapture = videoCapture
         // Create time-stamped output file to hold the image
         val photoFile = File(
             outputDirectory,

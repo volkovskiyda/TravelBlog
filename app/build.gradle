@@ -93,7 +93,6 @@ dependencies {
     implementation "com.google.firebase:firebase-auth-ktx"
 
     implementation "com.google.dagger:hilt-android:$hilt_version"
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.0'
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
 
