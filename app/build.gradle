@@ -101,11 +101,14 @@ dependencies {
     kapt "androidx.hilt:hilt-compiler:1.0.0-beta01"
 
     implementation 'com.firebaseui:firebase-ui-auth:6.4.0'
+    implementation 'com.google.android.gms:play-services-auth:19.0.0'
 
     //googlePlay Services
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     //maps
     implementation "com.google.android.gms:play-services-location:18.0.0"
+
+    implementation 'androidx.cardview:cardview:1.0.0'
 
     testImplementation "junit:junit:4.13.2"
 

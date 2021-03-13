@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="spacing_normal_16">16dp</dimen>
-    <dimen name="logo_size">100dp</dimen>
+    <dimen name="avatar_round_size">112dp</dimen>
+
     <dimen name="font_large_20">20sp</dimen>
+    <dimen name="font_normal_16">16sp</dimen>
+    <dimen name="font_small_12">12sp</dimen>
+
+    <dimen name="spacing_large_24">24dp</dimen>
+    <dimen name="spacing_normal_16">16dp</dimen>
+    <dimen name="spacing_tiny_4">4dp</dimen>
+
+    <dimen name="logo_size">100dp</dimen>
+
     <dimen name="margin_one">16dp</dimen>
     <dimen name="margin_half">8dp</dimen>
 </resources>
