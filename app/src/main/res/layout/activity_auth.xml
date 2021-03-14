@@ -13,7 +13,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginTop="@dimen/spacing_normal_16"
-        android:src="@color/purple_200"/>
+        android:src="@drawable/icon_blog"/>
 
     <CheckBox
         android:id="@+id/chb_blogger"
