@@ -138,13 +138,11 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun openConsumer() {
-        Toast.makeText(this, "openConsumer", Toast.LENGTH_SHORT).show()
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
 
     private fun openBlogger() {
-        Toast.makeText(this, "openBlogger", Toast.LENGTH_SHORT).show()
         startActivity(Intent(this, BloggerActivity::class.java))
         finish()
     }
