@@ -37,8 +37,7 @@ class AuthActivity : AppCompatActivity() {
                     .getResult(ApiException::class.java)!!
 
             val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-            val auth = Firebase.auth
-            auth.signInWithCredential(credential).onSuccessTask { authResult ->
+            Firebase.auth.signInWithCredential(credential).onSuccessTask { authResult ->
                 val user = authResult.user!!
                 val userData = mapOf(
                     "uid" to user.uid,
@@ -50,7 +49,7 @@ class AuthActivity : AppCompatActivity() {
                 )
                 Firebase.firestore.collection("users").document(user.uid).set(userData)
             }.addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) openUser(auth.currentUser) else showAuthFailed(task.exception)
+                if (task.isSuccessful) openUser(Firebase.auth.currentUser) else showAuthFailed(task.exception)
             }
         } catch (e: ApiException) {
             showAuthFailed(e)
@@ -139,13 +138,11 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun openConsumer() {
-        Toast.makeText(this, "openConsumer", Toast.LENGTH_SHORT).show()
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
 
     private fun openBlogger() {
-        Toast.makeText(this, "openBlogger", Toast.LENGTH_SHORT).show()
         startActivity(Intent(this, BloggerActivity::class.java))
         finish()
     }

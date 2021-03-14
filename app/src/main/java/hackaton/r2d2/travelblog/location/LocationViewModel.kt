@@ -31,9 +31,10 @@ class LocationViewModel : ViewModel() {
         }
     }
 
-    fun selectLocation(latLng: LatLng) {
-        val location = locations.value.orEmpty().firstOrNull { it.latLng == latLng } ?: return
+    fun selectLocation(latLng: LatLng): Boolean {
+        val location = locations.value.orEmpty().firstOrNull { it.latLng == latLng } ?: return false
         val locationTime = location.timestamp.time
         _seekPosition.value = (locationTime - (selectedVideo.value?.start?.time ?: locationTime)) / 1000f
+        return true
     }
 }
