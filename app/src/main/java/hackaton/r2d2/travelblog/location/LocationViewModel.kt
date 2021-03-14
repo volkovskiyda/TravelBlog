@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.LatLng
 import hackaton.r2d2.travelblog.Repository
 import hackaton.r2d2.travelblog.model.Location
 import hackaton.r2d2.travelblog.model.Video
@@ -30,7 +31,8 @@ class LocationViewModel : ViewModel() {
         }
     }
 
-    fun selectLocation(location: Location) {
+    fun selectLocation(latLng: LatLng) {
+        val location = locations.value.orEmpty().firstOrNull { it.latLng == latLng } ?: return
         val locationTime = location.timestamp.time
         _seekPosition.value = (locationTime - (selectedVideo.value?.start?.time ?: locationTime)) / 1000f
     }
