@@ -75,6 +75,7 @@ class Repository private constructor() {
                 .collection("locations")
                 .whereGreaterThanOrEqualTo("timestamp", Timestamp(start))
                 .whereLessThanOrEqualTo("timestamp", Timestamp(end))
+                .orderBy("timestamp")
                 .get()
                 .addOnCompleteListener { task ->
                     task.result?.let {
