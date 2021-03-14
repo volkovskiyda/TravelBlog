@@ -41,7 +41,9 @@ class LocationFragment : Fragment() {
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
 
-        googleMap.setOnPoiClickListener { poi -> viewModel.selectLocation(poi.latLng) }
+        googleMap.setOnMarkerClickListener { marker ->
+            return@setOnMarkerClickListener viewModel.selectLocation(marker.position)
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             //Начальные параметры
