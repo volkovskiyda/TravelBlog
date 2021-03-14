@@ -95,6 +95,7 @@ class LocationFragment : Fragment() {
                 override fun onReady(youTubePlayer: YouTubePlayer) {
                     player = youTubePlayer
                     youTubePlayer.cueVideo(viewModel.selectedVideo.value!!.id, 0f)
+                    youTubePlayer.play()
                 }
             })
         binding.youtubePlayer.getPlayerUiController().setFullScreenButtonClickListener {
